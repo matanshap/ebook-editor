@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import math
 import re
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Iterable, List, Sequence, Tuple
@@ -42,11 +43,28 @@ class BuildResult:
 
 def extract_text_from_pdf(path: Path) -> str:
     from pypdf import PdfReader
+    from pypdf.errors import PdfStreamError
 
     reader = PdfReader(str(path))
     pages = []
-    for page in reader.pages:
-        pages.append(page.extract_text() or "")
+    skipped_pages: List[int] = []
+    for index, page in enumerate(reader.pages, start=1):
+        try:
+            pages.append(page.extract_text() or "")
+        except PdfStreamError:
+            skipped_pages.append(index)
+            pages.append("")
+
+    if skipped_pages:
+        warnings.warn(
+            (
+                f"Skipped {len(skipped_pages)} unreadable page(s) in {path.name}: "
+                + ", ".join(str(i) for i in skipped_pages)
+            ),
+            RuntimeWarning,
+            stacklevel=2,
+        )
+
     return "\n".join(pages)
 
 
