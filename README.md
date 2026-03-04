@@ -1,6 +1,11 @@
 # ebook-editor (bilingual PDF builder)
 
-This repository now includes a starter CLI to build a **bilingual, interleaved PDF** from two PDFs (original + translation).
+This repository includes:
+
+- a **CLI** to build an interleaved bilingual PDF from two PDFs.
+- a **desktop GUI** (Tkinter) for Windows/macOS/Linux local usage.
+- a modular **core processing layer** so future features (new aligners, previews,
+  export formats, batch jobs, plugins) can be added without rewriting interfaces.
 
 ## What it does
 
@@ -24,7 +29,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Usage
+## CLI usage
 
 ```bash
 python bilingual_pdf_builder.py \
@@ -43,9 +48,35 @@ If your languages require Unicode glyphs not covered by Helvetica, provide a TTF
 python bilingual_pdf_builder.py ... --font /path/to/NotoSans-Regular.ttf
 ```
 
+## GUI usage (recommended for Windows)
+
+Run:
+
+```bash
+python gui_app.py
+```
+
+Then in the window:
+
+1. Select left/right PDFs.
+2. Pick output file path.
+3. Optionally choose a `.ttf` font.
+4. Click **Build PDF** and monitor progress logs.
+
+## Extensibility notes
+
+The new `ebook_editor_core.py` module contains all processing logic behind
+`BuildRequest -> BuildResult`, which is consumed by both CLI and GUI.
+This makes it straightforward to add:
+
+- richer alignment strategies,
+- paragraph/chapter-aware modes,
+- batch processing,
+- REST/local web front-ends,
+- and advanced editor workflows.
+
 ## Notes on alignment quality
 
 - PDF extraction quality strongly affects sentence alignment.
 - This is a length-based aligner; for best results, use clean text-based PDFs.
 - OCR-heavy scans may need preprocessing (OCR + cleanup) before alignment.
-- The extractor runs in best-effort mode for malformed PDFs: unreadable pages are skipped with warnings instead of crashing the whole job.
